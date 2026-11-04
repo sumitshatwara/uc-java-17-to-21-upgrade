@@ -19,7 +19,7 @@ public class JacksonCustomizations {
     return new RealWorldModules();
   }
 
-  public static class RealWorldModules extends SimpleModule {
+  public static final class RealWorldModules extends SimpleModule {
     public RealWorldModules() {
       addSerializer(DateTime.class, new DateTimeSerializer());
     }
