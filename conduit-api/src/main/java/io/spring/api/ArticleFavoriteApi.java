@@ -27,7 +27,7 @@ public class ArticleFavoriteApi {
   private ArticleQueryService articleQueryService;
 
   @PostMapping
-  public ResponseEntity favoriteArticle(
+  public ResponseEntity<?> favoriteArticle(
       @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
     Article article =
         articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
@@ -37,7 +37,7 @@ public class ArticleFavoriteApi {
   }
 
   @DeleteMapping
-  public ResponseEntity unfavoriteArticle(
+  public ResponseEntity<?> unfavoriteArticle(
       @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
     Article article =
         articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);

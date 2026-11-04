@@ -63,7 +63,7 @@ public class ArticleApi {
   }
 
   @DeleteMapping
-  public ResponseEntity deleteArticle(
+  public ResponseEntity<?> deleteArticle(
       @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
     return articleRepository
         .findBySlug(slug)

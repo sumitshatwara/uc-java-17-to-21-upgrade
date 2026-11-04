@@ -51,7 +51,7 @@ public class CommentsApi {
   }
 
   @GetMapping
-  public ResponseEntity getComments(
+  public ResponseEntity<?> getComments(
       @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
     Article article =
         articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
@@ -65,7 +65,7 @@ public class CommentsApi {
   }
 
   @RequestMapping(path = "{id}", method = RequestMethod.DELETE)
-  public ResponseEntity deleteComment(
+  public ResponseEntity<?> deleteComment(
       @PathVariable("slug") String slug,
       @PathVariable("id") String commentId,
       @AuthenticationPrincipal User user) {

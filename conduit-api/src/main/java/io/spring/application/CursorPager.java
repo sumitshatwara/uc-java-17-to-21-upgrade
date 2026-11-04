@@ -29,11 +29,11 @@ public class CursorPager<T extends Node> {
     return previous;
   }
 
-  public PageCursor getStartCursor() {
+  public PageCursor<?> getStartCursor() {
     return data.isEmpty() ? null : data.get(0).getCursor();
   }
 
-  public PageCursor getEndCursor() {
+  public PageCursor<?> getEndCursor() {
     return data.isEmpty() ? null : data.get(data.size() - 1).getCursor();
   }
 

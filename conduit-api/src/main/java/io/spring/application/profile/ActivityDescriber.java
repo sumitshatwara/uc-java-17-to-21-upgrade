@@ -3,7 +3,7 @@ package io.spring.application.profile;
 import java.util.Locale;
 
 public final class ActivityDescriber {
-  private static final Locale UK = new Locale("en", "GB");
+  private static final Locale UK = Locale.of("en", "GB");
 
   private ActivityDescriber() {}
 

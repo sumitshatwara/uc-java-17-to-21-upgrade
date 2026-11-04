@@ -26,7 +26,7 @@ public class ProfileApi {
   private UserRepository userRepository;
 
   @GetMapping
-  public ResponseEntity getProfile(
+  public ResponseEntity<?> getProfile(
       @PathVariable("username") String username, @AuthenticationPrincipal User user) {
     return profileQueryService
         .findByUsername(username, user)
@@ -35,7 +35,7 @@ public class ProfileApi {
   }
 
   @PostMapping(path = "follow")
-  public ResponseEntity follow(
+  public ResponseEntity<?> follow(
       @PathVariable("username") String username, @AuthenticationPrincipal User user) {
     return userRepository
         .findByUsername(username)
@@ -49,7 +49,7 @@ public class ProfileApi {
   }
 
   @DeleteMapping(path = "follow")
-  public ResponseEntity unfollow(
+  public ResponseEntity<?> unfollow(
       @PathVariable("username") String username, @AuthenticationPrincipal User user) {
     Optional<User> userOptional = userRepository.findByUsername(username);
     if (userOptional.isPresent()) {
@@ -67,7 +67,7 @@ public class ProfileApi {
     }
   }
 
-  private ResponseEntity profileResponse(ProfileData profile) {
+  private ResponseEntity<?> profileResponse(ProfileData profile) {
     return ResponseEntity.ok(
         new HashMap<String, Object>() {
           {

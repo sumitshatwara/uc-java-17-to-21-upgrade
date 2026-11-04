@@ -30,7 +30,7 @@ public interface ArticleReadService {
       @Param("authors") List<String> authors, @Param("page") Page page);
 
   List<ArticleData> findArticlesOfAuthorsWithCursor(
-      @Param("authors") List<String> authors, @Param("page") CursorPageParameter page);
+      @Param("authors") List<String> authors, @Param("page") CursorPageParameter<?> page);
 
   int countFeedSize(@Param("authors") List<String> authors);
 
@@ -38,5 +38,5 @@ public interface ArticleReadService {
       @Param("tag") String tag,
       @Param("author") String author,
       @Param("favoritedBy") String favoritedBy,
-      @Param("page") CursorPageParameter page);
+      @Param("page") CursorPageParameter<?> page);
 }
