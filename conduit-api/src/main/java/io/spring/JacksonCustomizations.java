@@ -19,13 +19,16 @@ public class JacksonCustomizations {
     return new RealWorldModules();
   }
 
-  public static class RealWorldModules extends SimpleModule {
+  public static final class RealWorldModules extends SimpleModule {
+    private static final long serialVersionUID = 1L;
+
     public RealWorldModules() {
       addSerializer(DateTime.class, new DateTimeSerializer());
     }
   }
 
   public static class DateTimeSerializer extends StdSerializer<DateTime> {
+    private static final long serialVersionUID = 1L;
 
     protected DateTimeSerializer() {
       super(DateTime.class);

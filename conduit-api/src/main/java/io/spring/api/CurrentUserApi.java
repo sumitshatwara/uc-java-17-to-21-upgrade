@@ -29,7 +29,7 @@ public class CurrentUserApi {
   private UserService userService;
 
   @GetMapping
-  public ResponseEntity currentUser(
+  public ResponseEntity<?> currentUser(
       @AuthenticationPrincipal User currentUser,
       @RequestHeader(value = "Authorization") String authorization) {
     UserData userData = userQueryService.findById(currentUser.getId()).get();
@@ -38,7 +38,7 @@ public class CurrentUserApi {
   }
 
   @PutMapping
-  public ResponseEntity updateProfile(
+  public ResponseEntity<?> updateProfile(
       @AuthenticationPrincipal User currentUser,
       @RequestHeader("Authorization") String token,
       @Valid @RequestBody UpdateUserParam updateUserParam) {

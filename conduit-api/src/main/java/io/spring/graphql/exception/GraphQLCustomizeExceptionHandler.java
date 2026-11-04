@@ -107,13 +107,13 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
   }
 
   private static Map<String, Object> errorsToMap(List<FieldErrorResource> errors) {
-    Map<String, Object> json = new HashMap<>();
+    Map<String, List<String>> json = new HashMap<>();
     for (FieldErrorResource fieldErrorResource : errors) {
       if (!json.containsKey(fieldErrorResource.getField())) {
         json.put(fieldErrorResource.getField(), new ArrayList<>());
       }
-      ((List) json.get(fieldErrorResource.getField())).add(fieldErrorResource.getMessage());
+      json.get(fieldErrorResource.getField()).add(fieldErrorResource.getMessage());
     }
-    return json;
+    return new HashMap<>(json);
   }
 }

@@ -1,25 +1,32 @@
 plugins {
-    id 'org.springframework.boot' version '3.2.12'
+    id 'org.springframework.boot' version '3.3.13'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'java'
-    id "com.netflix.dgs.codegen" version "6.3.0"
-    id "com.diffplug.spotless" version "6.25.0"
+    id "com.netflix.dgs.codegen" version "8.1.0"
+    id "com.diffplug.spotless" version "7.0.4"
     id 'jacoco'
 }
 
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '17'
-targetCompatibility = '17'
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 21
+}
 
 spotless {
     java {
         target 'src/**/*.java'
-        googleJavaFormat()
+        googleJavaFormat('1.19.2')
     }
 }
 
 jacoco {
-    toolVersion = "0.8.12"
+    toolVersion = "0.8.13"
 }
 
 // DGS codegen output is generated at build time and not worth covering by hand.
@@ -60,6 +67,9 @@ repositories {
 }
 
 configurations {
+    testAgent {
+        transitive = false
+    }
     compileOnly {
         extendsFrom annotationProcessor
     }
@@ -70,8 +80,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
-    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:8.7.1'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
+    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:9.2.2'
     implementation 'org.flywaydb:flyway-core'
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6',
@@ -79,8 +89,8 @@ dependencies {
     implementation 'joda-time:joda-time:2.12.7'
     implementation 'org.xerial:sqlite-jdbc:3.45.3.0'
 
-    compileOnly 'org.projectlombok:lombok:1.18.26'
-    annotationProcessor 'org.projectlombok:lombok:1.18.26'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
     testImplementation 'io.rest-assured:rest-assured'
     testImplementation 'io.rest-assured:json-path'
@@ -88,13 +98,20 @@ dependencies {
     testImplementation 'io.rest-assured:spring-mock-mvc'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.3'
+    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
+    testAgent 'net.bytebuddy:byte-buddy-agent'
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+
+    // Mockito instrumentation appends to the bootstrap classpath, which cannot use CDS.
+    jvmArgs '-Xshare:off'
+    doFirst {
+        jvmArgs "-javaagent:${configurations.testAgent.singleFile}"
+    }
 	finalizedBy jacocoTestReport
 }
 
@@ -107,7 +124,11 @@ tasks.named('clean') {
 tasks.named('generateJava') {
     schemaPaths = ["${projectDir}/src/main/resources/schema"] // List of directories containing schema files
     packageName = 'io.spring.graphql' // The package name to use to generate sources
-    typeMapping = ["PageInfo": "graphql.relay.PageInfo"] // codegen 6 no longer maps Relay PageInfo by default
+    typeMapping = ["PageInfo": "graphql.relay.PageInfo"]
+}
+
+codegen {
+    clientCoreConventionsEnabled = false
 }
 
 // Clean database before running to avoid Flyway migration conflicts
