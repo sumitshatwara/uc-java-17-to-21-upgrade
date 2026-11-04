@@ -9,18 +9,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 /**
- * Builds a profile summary by fanning out three blocking reads (articles, followers, favourites) on
- * a fixed-size thread pool. Each read carries a simulated remote-call delay.
+ * Builds a profile summary by fanning out three blocking reads (articles, followers, favourites),
+ * each on its own virtual thread. Each read carries a simulated remote-call delay. The pool-size
+ * parameter no longer sizes anything; it is kept for constructor and configuration compatibility.
  */
 @Service
 public class ProfileSummaryService implements DisposableBean {
@@ -28,7 +30,8 @@ public class ProfileSummaryService implements DisposableBean {
 
   private final UserReadService userReadService;
   private final ProfileSummaryReadService profileSummaryReadService;
-  private final ThreadPoolTaskExecutor executor;
+  private final ExecutorService executor =
+      Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("profile-summary-", 0).factory());
   private final long simulatedLatencyMs;
   private final String publicBaseUrl;
 
@@ -42,12 +45,6 @@ public class ProfileSummaryService implements DisposableBean {
     this.profileSummaryReadService = profileSummaryReadService;
     this.simulatedLatencyMs = simulatedLatencyMs;
     this.publicBaseUrl = publicBaseUrl;
-    this.executor = new ThreadPoolTaskExecutor();
-    this.executor.setCorePoolSize(poolSize);
-    this.executor.setMaxPoolSize(poolSize);
-    this.executor.setQueueCapacity(10_000);
-    this.executor.setThreadNamePrefix("profile-summary-");
-    this.executor.initialize();
   }
 
   public Optional<ProfileSummaryData> summarize(String username) {
@@ -69,12 +66,12 @@ public class ProfileSummaryService implements DisposableBean {
 
     int favoritesReceived = 0;
     for (AuthoredArticle article : articles) {
-      favoritesReceived += article.getFavoritesCount();
+      favoritesReceived += article.favoritesCount();
     }
 
     AuthoredArticle latestArticle = null;
     if (!articles.isEmpty()) {
-      latestArticle = articles.get(articles.size() - 1);
+      latestArticle = articles.getLast();
     }
 
     List<ProfileActivity> activities = new ArrayList<>(articles);
@@ -127,6 +124,6 @@ public class ProfileSummaryService implements DisposableBean {
 
   @Override
   public void destroy() {
-    executor.shutdown();
+    executor.close();
   }
 }
