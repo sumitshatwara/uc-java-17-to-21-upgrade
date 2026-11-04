@@ -15,7 +15,7 @@ import com.workshop.loanservice.service.exposure.ExposureTotals;
 import com.workshop.loanservice.service.exposure.OutstandingPrincipal;
 import com.workshop.loanservice.service.exposure.PaymentRecord;
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +38,7 @@ import org.springframework.stereotype.Service;
 public class ExposureService implements DisposableBean {
 
     private static final Logger log = LoggerFactory.getLogger(ExposureService.class);
-    private static final Locale UK = new Locale("en", "GB");
+    private static final Locale UK = Locale.of("en", "GB");
 
     private final LegacyBorrowerRepository borrowerRepository;
     private final LegacyLoanAccountRepository loanAccountRepository;
@@ -124,7 +124,7 @@ public class ExposureService implements DisposableBean {
 
     private <T> CompletableFuture<T> fetch(Supplier<T> call) {
         return CompletableFuture.supplyAsync(() -> {
-            log.debug("exposure read on thread {}", Thread.currentThread().getId());
+            log.debug("exposure read on thread {}", Thread.currentThread().threadId());
             simulateRemoteCall();
             return call.get();
         }, executor);
@@ -144,8 +144,9 @@ public class ExposureService implements DisposableBean {
 
     private String selfLink(String borrowerId) {
         try {
-            return new URL(publicBaseUrl + "/api/borrowers/" + borrowerId + "/exposure").toString();
-        } catch (MalformedURLException e) {
+            return URI.create(publicBaseUrl + "/api/borrowers/" + borrowerId + "/exposure")
+                    .toURL().toString();
+        } catch (MalformedURLException | IllegalArgumentException e) {
             throw new IllegalStateException("Bad public base URL: " + publicBaseUrl, e);
         }
     }
