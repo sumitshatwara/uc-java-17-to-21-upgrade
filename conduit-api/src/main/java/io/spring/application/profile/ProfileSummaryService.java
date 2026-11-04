@@ -4,7 +4,7 @@ import io.spring.application.data.UserData;
 import io.spring.infrastructure.mybatis.readservice.ProfileSummaryReadService;
 import io.spring.infrastructure.mybatis.readservice.UserReadService;
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -98,7 +98,7 @@ public class ProfileSummaryService implements DisposableBean {
   private <T> CompletableFuture<T> fetch(Supplier<T> call) {
     return CompletableFuture.supplyAsync(
         () -> {
-          log.debug("profile summary read on thread {}", Thread.currentThread().getId());
+          log.debug("profile summary read on thread {}", Thread.currentThread().threadId());
           simulateRemoteCall();
           return call.get();
         },
@@ -119,10 +119,11 @@ public class ProfileSummaryService implements DisposableBean {
 
   private String profileUrl(String username) {
     try {
-      return new URL(publicBaseUrl + "/profiles/" + username).toString();
-    } catch (MalformedURLException e) {
+      URI.create(publicBaseUrl).toURL();
+    } catch (MalformedURLException | IllegalArgumentException e) {
       throw new IllegalStateException("Bad public base URL: " + publicBaseUrl, e);
     }
+    return publicBaseUrl + "/profiles/" + username;
   }
 
   @Override

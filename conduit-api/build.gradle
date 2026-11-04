@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version '3.2.12'
+    id 'org.springframework.boot' version '3.3.13'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'java'
     id "com.netflix.dgs.codegen" version "6.3.0"
@@ -8,8 +8,10 @@ plugins {
 }
 
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '17'
-targetCompatibility = '17'
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
 
 spotless {
     java {
@@ -59,6 +61,9 @@ repositories {
     mavenCentral()
 }
 
+// DGS 8.7.1 strictly requires graphql-java [21.4, 21.5]; Boot 3.3 would manage 22.x.
+ext['graphql-java.version'] = '21.5'
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -79,8 +84,8 @@ dependencies {
     implementation 'joda-time:joda-time:2.12.7'
     implementation 'org.xerial:sqlite-jdbc:3.45.3.0'
 
-    compileOnly 'org.projectlombok:lombok:1.18.26'
-    annotationProcessor 'org.projectlombok:lombok:1.18.26'
+    compileOnly 'org.projectlombok:lombok:1.18.36'
+    annotationProcessor 'org.projectlombok:lombok:1.18.36'
 
     testImplementation 'io.rest-assured:rest-assured'
     testImplementation 'io.rest-assured:json-path'
