@@ -15,7 +15,7 @@ public class TagsApi {
   private TagsQueryService tagsQueryService;
 
   @GetMapping
-  public ResponseEntity getTags() {
+  public ResponseEntity<?> getTags() {
     return ResponseEntity.ok(
         new HashMap<String, Object>() {
           {

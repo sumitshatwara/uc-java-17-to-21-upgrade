@@ -37,7 +37,7 @@ public class UsersApi {
   private UserService userService;
 
   @RequestMapping(path = "/users", method = POST)
-  public ResponseEntity createUser(@Valid @RequestBody RegisterParam registerParam) {
+  public ResponseEntity<?> createUser(@Valid @RequestBody RegisterParam registerParam) {
     User user = userService.createUser(registerParam);
     UserData userData = userQueryService.findById(user.getId()).get();
     return ResponseEntity.status(201)
@@ -45,7 +45,7 @@ public class UsersApi {
   }
 
   @RequestMapping(path = "/users/login", method = POST)
-  public ResponseEntity userLogin(@Valid @RequestBody LoginParam loginParam) {
+  public ResponseEntity<?> userLogin(@Valid @RequestBody LoginParam loginParam) {
     Optional<User> optional = userRepository.findByEmail(loginParam.getEmail());
     if (optional.isPresent()
         && passwordEncoder.matches(loginParam.getPassword(), optional.get().getPassword())) {
