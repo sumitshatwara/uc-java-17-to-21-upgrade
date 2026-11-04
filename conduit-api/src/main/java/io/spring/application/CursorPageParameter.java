@@ -15,7 +15,7 @@ public class CursorPageParameter<T> {
   public CursorPageParameter(T cursor, int limit, Direction direction) {
     setLimit(limit);
     setCursor(cursor);
-    setDirection(direction);
+    this.direction = direction;
   }
 
   public boolean isNext() {

@@ -5,6 +5,7 @@ import io.spring.core.user.UserRepository;
 import jakarta.validation.Constraint;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import jakarta.validation.Payload;
 import jakarta.validation.Valid;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -62,9 +63,9 @@ public class UserService {
 
   String message() default "invalid update param";
 
-  Class[] groups() default {};
+  Class<?>[] groups() default {};
 
-  Class[] payload() default {};
+  Class<? extends Payload>[] payload() default {};
 }
 
 class UpdateUserValidator implements ConstraintValidator<UpdateUserConstraint, UpdateUserCommand> {
