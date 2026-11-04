@@ -20,8 +20,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
- * Builds profile summaries with virtual thread per read; pool-size remains for constructor and
- * configuration compatibility. Each read carries a simulated remote-call delay.
+ * Builds a profile summary by fanning out three blocking reads (articles, followers, favourites),
+ * each on its own virtual thread. Each read carries a simulated remote-call delay. The pool-size
+ * parameter no longer sizes anything; it is kept for constructor and configuration compatibility.
  */
 @Service
 public class ProfileSummaryService implements DisposableBean {
