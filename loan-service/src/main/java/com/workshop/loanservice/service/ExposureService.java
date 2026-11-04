@@ -21,18 +21,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 /**
  * Builds a borrower's exposure by fanning out blocking reads (borrower, loans, then payments per
- * loan) on a fixed-size thread pool. Each read carries a simulated remote-call delay.
+ * loan) on one virtual thread per read. Each read carries a simulated remote-call delay.
  */
 @Service
 public class ExposureService implements DisposableBean {
@@ -43,10 +43,14 @@ public class ExposureService implements DisposableBean {
     private final LegacyBorrowerRepository borrowerRepository;
     private final LegacyLoanAccountRepository loanAccountRepository;
     private final LegacyPaymentRepository paymentRepository;
-    private final ThreadPoolTaskExecutor executor;
+    private final ExecutorService executor;
     private final long simulatedLatencyMs;
     private final String publicBaseUrl;
 
+    /**
+     * The pool size is retained for compatibility but ignored because each read gets its own virtual
+     * thread.
+     */
     public ExposureService(LegacyBorrowerRepository borrowerRepository,
                            LegacyLoanAccountRepository loanAccountRepository,
                            LegacyPaymentRepository paymentRepository,
@@ -58,12 +62,8 @@ public class ExposureService implements DisposableBean {
         this.paymentRepository = paymentRepository;
         this.simulatedLatencyMs = simulatedLatencyMs;
         this.publicBaseUrl = publicBaseUrl;
-        this.executor = new ThreadPoolTaskExecutor();
-        this.executor.setCorePoolSize(poolSize);
-        this.executor.setMaxPoolSize(poolSize);
-        this.executor.setQueueCapacity(10_000);
-        this.executor.setThreadNamePrefix("exposure-");
-        this.executor.initialize();
+        this.executor = Executors.newThreadPerTaskExecutor(
+                Thread.ofVirtual().name("exposure-", 0).factory());
     }
 
     public BorrowerExposureDto getExposure(String borrowerId) {
@@ -80,7 +80,7 @@ public class ExposureService implements DisposableBean {
 
         List<CompletableFuture<List<LegacyPayment>>> paymentFutures = loans.stream()
                 .map(loan -> fetch(() -> paymentRepository.findByLoanAccountNumber(loan.getLoanAccountNumber())))
-                .collect(Collectors.toList());
+                .toList();
 
         List<ExposureComponent> components = new ArrayList<>();
         for (LegacyLoanAccount loan : loans) {
@@ -153,6 +153,6 @@ public class ExposureService implements DisposableBean {
 
     @Override
     public void destroy() {
-        executor.shutdown();
+        executor.close();
     }
 }
